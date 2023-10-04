@@ -71,6 +71,20 @@ Conversion match: OK
 
 
 
+[test_11] Long expression
+Provided infix  : A*B*C*D*E+F=
+Expected postfix: AB*C*D*E*F+=
+Conversion match: OK
+
+
+
+[test_12] Black box testing 01
+Provided infix  : A+B*C*D=
+Expected postfix: ABC*D*+=
+Conversion match: OK
+
+
+
 [test_eval_01] Evaluate expression
 expression : (a+b)*(c-d)=
 variables  : a = 5, b = 5, c = 12, d = 2

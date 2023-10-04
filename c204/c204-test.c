@@ -77,6 +77,20 @@ TEST(test_10, "Parentheses change operator priority")
 	}
 ENDTEST
 
+TEST(test_11, "Long expression")
+	if (convert("A*B*C*D*E+F=", &expr))
+	{
+		verify(expr, "AB*C*D*E*F+=");
+	}
+ENDTEST
+
+TEST(test_12, "Black box testing 01")
+	if (convert("A+B*C*D=", &expr))
+	{
+		verify(expr, "ABC*D*+=");
+	}
+ENDTEST
+
 TEST(test_eval_01, "Evaluate expression")
 	STACK_SIZE = 128;
 	expr = "(a+b)*(c-d)=";
@@ -136,6 +150,8 @@ void (*tests[])(void) = {
 		test_08,
 		test_09,
 		test_10,
+		test_11,
+		test_12,
 		test_eval_01,
 		test_eval_02,
 		test_eval_03,

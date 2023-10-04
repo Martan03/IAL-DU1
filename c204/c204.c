@@ -58,10 +58,13 @@ void untilLeftPar( Stack *stack, char *postfixExpression, unsigned *postfixExpre
 	char c;
 	while (!Stack_IsEmpty(stack)) {
 		Stack_Top(stack, &c);
-		postfixExpression[*postfixExpressionLength++] = c;
+		Stack_Pop(stack);
 
 		if (c == '(')
 			break;
+
+		postfixExpression[*postfixExpressionLength] = c;
+		++*postfixExpressionLength;
 	}
 }
 
@@ -107,11 +110,11 @@ void doOperation( Stack *stack, char c, char *postfixExpression, unsigned *postf
 	Stack_Top(stack, &op);
 
 	if (presedence(op) >= presedence(c)) {
-		postfixExpression[*postfixExpressionLength++] = op;
+		postfixExpression[*postfixExpressionLength] = op;
+		++*postfixExpressionLength;
 		Stack_Pop(stack);
 	}
-	else
-		Stack_Push(stack, c);
+	Stack_Push(stack, c);
 }
 
 /**
@@ -173,15 +176,22 @@ char *infix2postfix( const char *infixExpression ) {
 	for (int i = 0; infixExpression[i]; ++i) {
 		if (presedence(infixExpression[i]))
 			doOperation(&ops, infixExpression[i], postfix, &cur);
+		else if (infixExpression[i] == '(')
+			Stack_Push(&ops, infixExpression[i]);
+		else if (infixExpression[i] == ')')
+			untilLeftPar(&ops, postfix, &cur);
 		else
 			postfix[cur++] = infixExpression[i];
 	}
 
+	--cur;
 	untilLeftPar(&ops, postfix, &cur);
 
 	Stack_Dispose(&ops);
 
+	postfix[cur++] = '=';
 	postfix[cur] = '\0';
+
 	return postfix;
 }
 
