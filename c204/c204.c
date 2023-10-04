@@ -32,6 +32,7 @@
 **/
 
 #include "c204.h"
+#include <ctype.h>
 
 bool solved;
 
@@ -59,8 +60,24 @@ void untilLeftPar( Stack *stack, char *postfixExpression, unsigned *postfixExpre
 		Stack_Top(stack, &c);
 		postfixExpression[*postfixExpressionLength++] = c;
 
-		if (c == "(")
+		if (c == '(')
 			break;
+	}
+}
+
+/// @brief Gets presedence of the given operator
+/// @param c operator to get presedence of
+/// @return	presedence
+int presedence(char c) {
+	switch (c) {
+		case '+':
+		case '-':
+			return 1;
+		case '*':
+		case '/':
+			return 2;
+		default:
+			return 0;
 	}
 }
 
@@ -81,7 +98,20 @@ void untilLeftPar( Stack *stack, char *postfixExpression, unsigned *postfixExpre
  * @param postfixExpressionLength Ukazatel na aktuální délku výsledného postfixového výrazu
  */
 void doOperation( Stack *stack, char c, char *postfixExpression, unsigned *postfixExpressionLength ) {
-	solved = false; /* V případě řešení, smažte tento řádek! */
+	if (Stack_IsEmpty(stack)) {
+		Stack_Push(stack, c);
+		return;
+	}
+
+	char op;
+	Stack_Top(stack, &op);
+
+	if (presedence(op) >= presedence(c)) {
+		postfixExpression[*postfixExpressionLength++] = op;
+		Stack_Pop(stack);
+	}
+	else
+		Stack_Push(stack, c);
 }
 
 /**
@@ -137,8 +167,21 @@ char *infix2postfix( const char *infixExpression ) {
 	if (!postfix)
 		return NULL;
 
-	
+	unsigned cur = 0;
+	Stack ops;
+	Stack_Init(&ops);
+	for (int i = 0; infixExpression[i]; ++i) {
+		if (presedence(infixExpression[i]))
+			doOperation(&ops, infixExpression[i], postfix, &cur);
+		else
+			postfix[cur++] = infixExpression[i];
+	}
 
+	untilLeftPar(&ops, postfix, &cur);
+
+	Stack_Dispose(&ops);
+
+	postfix[cur] = '\0';
 	return postfix;
 }
 
@@ -155,7 +198,9 @@ char *infix2postfix( const char *infixExpression ) {
  * @param value hodnota k vložení na zásobník
  */
 void expr_value_push( Stack *stack, int value ) {
-	solved = false; /* V případě řešení, smažte tento řádek! */
+	for (int i = 3; i >= 0 ; --i) {
+		Stack_Push(stack, value >> i * 8 & 0xff);
+	}
 }
 
 /**
@@ -171,8 +216,12 @@ void expr_value_push( Stack *stack, int value ) {
  *   výsledné celočíselné hodnoty z vrcholu zásobníku
  */
 void expr_value_pop( Stack *stack, int *value ) {
-	solved = false; /* V případě řešení, smažte tento řádek! */
+	char c;
 	*value = 0;
+	for (int i = 0; i < 4; ++i) {
+		Stack_Top(stack, &c);
+		*value |= c << i * 8;
+	}
 }
 
 
