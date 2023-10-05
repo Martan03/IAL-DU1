@@ -32,7 +32,6 @@
 **/
 
 #include "c204.h"
-#include <ctype.h>
 
 bool solved;
 
@@ -317,7 +316,7 @@ bool eval( const char *infixExpression, VariableValue variableValues[], int vari
 			expr_value_push(&nums, calc(&nums, postfix[i]));
 		}
 		// Pushes digit to stack when digit
-		else if (isdigit(postfix[i])) {
+		else if (postfix[i] >= '0' && postfix[i] <= '9') {
 			expr_value_push(&nums, postfix[i] - '0');
 		}
 		// Gets variable value and pushes it to stack
