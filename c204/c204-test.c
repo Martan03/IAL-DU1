@@ -84,10 +84,17 @@ TEST(test_11, "Long expression")
 	}
 ENDTEST
 
-TEST(test_12, "White box testing 01")
+TEST(test_12, "Loop checker")
 	if (convert("A+B*C*D-E=", &expr))
 	{
 		verify(expr, "ABC*D*+E-=");
+	}
+ENDTEST
+
+TEST(test_13, "A lot of brackets")
+	if (convert("(E*((A+B)*C+D)+F)*G+H=", &expr))
+	{
+		verify(expr, "EAB+C*D+*F+G*H+=");
 	}
 ENDTEST
 
@@ -152,6 +159,7 @@ void (*tests[])(void) = {
 		test_10,
 		test_11,
 		test_12,
+		test_13,
 		test_eval_01,
 		test_eval_02,
 		test_eval_03,

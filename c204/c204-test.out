@@ -78,9 +78,16 @@ Conversion match: OK
 
 
 
-[test_12] White box testing 01
+[test_12] Loop checker
 Provided infix  : A+B*C*D-E=
 Expected postfix: ABC*D*+E-=
+Conversion match: OK
+
+
+
+[test_13] A lot of brackets
+Provided infix  : (E*((A+B)*C+D)+F)*G+H=
+Expected postfix: EAB+C*D+*F+G*H+=
 Conversion match: OK
 
 
