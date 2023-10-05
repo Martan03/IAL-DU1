@@ -1,3 +1,5 @@
+# IAL DU1
+
 V první domácí úloze, na Vás čekají následující tři příklady:
 
 1. **C202**: implementace zásobníku znaků v dynamickém poli *(až 2 body)*,

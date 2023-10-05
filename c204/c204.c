@@ -109,11 +109,16 @@ void doOperation( Stack *stack, char c, char *postfixExpression, unsigned *postf
 	char op;
 	Stack_Top(stack, &op);
 
-	if (presedence(op) >= presedence(c)) {
+	while (presedence(op) >= presedence(c)) {
 		postfixExpression[*postfixExpressionLength] = op;
 		++*postfixExpressionLength;
 		Stack_Pop(stack);
+
+		if (Stack_IsEmpty(stack))
+			break;
+		Stack_Top(stack, &op);
 	}
+
 	Stack_Push(stack, c);
 }
 
@@ -230,10 +235,51 @@ void expr_value_pop( Stack *stack, int *value ) {
 	*value = 0;
 	for (int i = 0; i < 4; ++i) {
 		Stack_Top(stack, &c);
+		Stack_Pop(stack);
 		*value |= c << i * 8;
 	}
 }
 
+/// @brief Finds variable value
+/// @param values array containing variables and its values
+/// @param cnt values array length
+/// @param var variable to find its value
+/// @return value of the given variable
+int var_value(VariableValue* values, int cnt, char var) {
+	for (int i = 0; i < cnt; ++i) {
+		if (values[i].name == var) {
+			return values[i].value;
+		}
+	}
+	return 0;
+}
+
+/// @brief Calculates next operation
+/// @param stack stack containing numbers
+/// @param op operation to calculate with
+/// @return result of the operation
+int calc(Stack *stack, char op) {
+	int x, y;
+	expr_value_pop(stack, &y);
+	expr_value_pop(stack, &x);
+
+	switch (op) {
+		case '+':
+			//printf("%d + %d = %d\n", x, y, x + y);
+			return x + y;
+		case '-':
+			//printf("%d - %d = %d\n", x, y, x - y);
+			return x - y;
+		case '*':
+			//printf("%d * %d = %d\n", x, y, x * y);
+			return x * y;
+		case '/':
+			//printf("%d / %d = %d\n", x, y, x / y);
+			return x / y;
+		default:
+			return 0;
+	}
+}
 
 /**
  * Tato metoda provede vyhodnocení výrazu zadaném v `infixExpression`,
@@ -258,8 +304,29 @@ void expr_value_pop( Stack *stack, int *value ) {
  * @return výsledek vyhodnocení daného výrazu na základě poskytnutých hodnot proměnných
  */
 bool eval( const char *infixExpression, VariableValue variableValues[], int variableValueCount, int *value ) {
-	solved = false; /* V případě řešení, smažte tento řádek! */
-	return NULL;
+	// Stack initialization
+	Stack nums;
+	Stack_Init(&nums);
+
+	char *postfix = infix2postfix(infixExpression);
+	for (int i = 0; postfix && postfix[i] != '='; ++i) {
+		if (presedence(postfix[i])) {
+			expr_value_push(&nums, calc(&nums, postfix[i]));
+		} else if (isdigit(postfix[i])) {
+			expr_value_push(&nums, postfix[i] - '0');
+		} else {
+			int v = var_value(variableValues, variableValueCount, postfix[i]);
+			expr_value_push(&nums, v);
+		}
+	}
+
+	expr_value_pop(&nums, value);
+
+	bool res = Stack_IsEmpty(&nums);
+	Stack_Dispose(&nums);
+	free(postfix);
+
+	return res;
 }
 
 /* Konec c204.c */

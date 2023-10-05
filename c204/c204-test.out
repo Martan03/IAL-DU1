@@ -78,9 +78,9 @@ Conversion match: OK
 
 
 
-[test_12] Black box testing 01
-Provided infix  : A+B*C*D=
-Expected postfix: ABC*D*+=
+[test_12] White box testing 01
+Provided infix  : A+B*C*D-E=
+Expected postfix: ABC*D*+E-=
 Conversion match: OK
 
 

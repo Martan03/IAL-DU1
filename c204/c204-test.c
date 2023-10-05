@@ -84,10 +84,10 @@ TEST(test_11, "Long expression")
 	}
 ENDTEST
 
-TEST(test_12, "Black box testing 01")
-	if (convert("A+B*C*D=", &expr))
+TEST(test_12, "White box testing 01")
+	if (convert("A+B*C*D-E=", &expr))
 	{
-		verify(expr, "ABC*D*+=");
+		verify(expr, "ABC*D*+E-=");
 	}
 ENDTEST
 
