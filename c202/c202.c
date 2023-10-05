@@ -72,11 +72,14 @@ void Stack_Error( int error_code ) {
  * @param stack Ukazatel na strukturu zásobníku
  */
 void Stack_Init( Stack *stack ) {
+	// Checks if stack is defined
 	if (!stack) {
 		Stack_Error(SERR_INIT);
 		return;
 	}
-	stack->array = malloc(sizeof(stack->array) * STACK_SIZE);
+
+	// Allocates memory and checks if allocated
+	stack->array = malloc(sizeof(*stack->array) * STACK_SIZE);
 	if (!stack->array) {
 		Stack_Error(SERR_INIT);
 		return;
@@ -126,11 +129,13 @@ bool Stack_IsFull( const Stack *stack ) {
  * @param dataPtr Ukazatel na cílovou proměnnou
  */
 void Stack_Top( const Stack *stack, char *dataPtr ) {
+	// Checks if stack is empty
 	if (Stack_IsEmpty(stack)) {
 		Stack_Error(SERR_TOP);
 		return;
 	}
 
+	// Gets top item from stack
 	*dataPtr = stack->array[stack->topIndex];
 }
 
@@ -148,6 +153,7 @@ void Stack_Top( const Stack *stack, char *dataPtr ) {
  * @param stack Ukazatel na inicializovanou strukturu zásobníku
  */
 void Stack_Pop( Stack *stack ) {
+	// Checks if stack is empty
 	if (Stack_IsEmpty(stack))
 		return;
 
@@ -166,11 +172,12 @@ void Stack_Pop( Stack *stack ) {
  * @param data Znak k vložení
  */
 void Stack_Push( Stack *stack, char data ) {
+	// Checks if stack is full
 	if (Stack_IsFull(stack)) {
 		Stack_Error(SERR_PUSH);
 		return;
 	}
-
+	// Inserts data to stack
 	stack->array[++stack->topIndex] = data;
 }
 
@@ -182,6 +189,7 @@ void Stack_Push( Stack *stack, char data ) {
  * @param stack Ukazatel na inicializovanou strukturu zásobníku
  */
 void Stack_Dispose( Stack *stack ) {
+	// Frees stack, sets array to NULL and topIndex to -1 (= empty)
 	free(stack->array);
 	stack->array = NULL;
 	stack->topIndex = -1;
