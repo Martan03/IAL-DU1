@@ -56,23 +56,25 @@ bool solved;
  */
 void untilLeftPar( Stack *stack, char *postfixExpression, unsigned *postfixExpressionLength ) {
 	char c;
+	// Loops while stack is not empty
 	while (!Stack_IsEmpty(stack)) {
+		// Gets value from top and pops
 		Stack_Top(stack, &c);
 		Stack_Pop(stack);
 
 		if (c == '(')
 			break;
 
-		postfixExpression[*postfixExpressionLength] = c;
-		++*postfixExpressionLength;
+		// Adds popped char to postfix expression
+		postfixExpression[(*postfixExpressionLength)++] = c;
 	}
 }
 
 /// @brief Gets presedence of the given operator
-/// @param c operator to get presedence of
+/// @param op operator to get presedence of
 /// @return	presedence
-int presedence(char c) {
-	switch (c) {
+int presedence(char op) {
+	switch (op) {
 		case '+':
 		case '-':
 			return 1;
@@ -101,24 +103,18 @@ int presedence(char c) {
  * @param postfixExpressionLength Ukazatel na aktuální délku výsledného postfixového výrazu
  */
 void doOperation( Stack *stack, char c, char *postfixExpression, unsigned *postfixExpressionLength ) {
-	if (Stack_IsEmpty(stack)) {
-		Stack_Push(stack, c);
-		return;
-	}
-
+	// Pops all operators from stack with greater or equal presedence
 	char op;
-	Stack_Top(stack, &op);
-
-	while (presedence(op) >= presedence(c)) {
-		postfixExpression[*postfixExpressionLength] = op;
-		++*postfixExpressionLength;
-		Stack_Pop(stack);
-
-		if (Stack_IsEmpty(stack))
-			break;
+	while (!Stack_IsEmpty(stack)) {
 		Stack_Top(stack, &op);
+		if (presedence(c) > presedence(op))
+			break;
+
+		postfixExpression[(*postfixExpressionLength)++] = op;
+		Stack_Pop(stack);
 	}
 
+	// Pushes current operator to stack
 	Stack_Push(stack, c);
 }
 
@@ -171,14 +167,18 @@ void doOperation( Stack *stack, char c, char *postfixExpression, unsigned *postf
  * @returns znakový řetězec obsahující výsledný postfixový výraz
  */
 char *infix2postfix( const char *infixExpression ) {
-	char *postfix = malloc(sizeof(postfix) * MAX_LEN);
+	// Allocates memory for postfix string, checks if allocated properly
+	char *postfix = malloc(sizeof(*postfix) * MAX_LEN);
 	if (!postfix)
 		return NULL;
 
-	unsigned cur = 0;
+	// Creates stack for operators
 	Stack ops;
 	Stack_Init(&ops);
-	for (int i = 0; infixExpression[i]; ++i) {
+
+	// Main loop containing infix to postfix parsing, calls specific functions
+	unsigned cur = 0;
+	for (int i = 0; infixExpression[i] != '='; ++i) {
 		if (presedence(infixExpression[i]))
 			doOperation(&ops, infixExpression[i], postfix, &cur);
 		else if (infixExpression[i] == '(')
@@ -189,13 +189,14 @@ char *infix2postfix( const char *infixExpression ) {
 			postfix[cur++] = infixExpression[i];
 	}
 
-	--cur;
+	// Pops remaining operators
 	untilLeftPar(&ops, postfix, &cur);
-
-	Stack_Dispose(&ops);
-
+	// Adds equals and end of string characters
 	postfix[cur++] = '=';
 	postfix[cur] = '\0';
+
+	// Frees stack
+	Stack_Dispose(&ops);
 
 	return postfix;
 }
@@ -213,7 +214,9 @@ char *infix2postfix( const char *infixExpression ) {
  * @param value hodnota k vložení na zásobník
  */
 void expr_value_push( Stack *stack, int value ) {
-	for (int i = 3; i >= 0 ; --i) {
+	// Pushes sizeof(value) bytes of number (more generic than using 4 bytes)
+	// Value has to be shifted and then masked
+	for (int i = sizeof(value) - 1; i >= 0 ; --i) {
 		Stack_Push(stack, value >> i * 8 & 0xff);
 	}
 }
@@ -231,27 +234,26 @@ void expr_value_push( Stack *stack, int value ) {
  *   výsledné celočíselné hodnoty z vrcholu zásobníku
  */
 void expr_value_pop( Stack *stack, int *value ) {
-	char c;
 	*value = 0;
-	for (int i = 0; i < 4; ++i) {
+	char c;
+	// Gets sizeof(*value) bytes of number (more generic then using 4 bytes)
+	// Pops from stack, shifts popped value and does bit or to get final value
+	for (int i = 0; i < (int)sizeof(*value); ++i) {
 		Stack_Top(stack, &c);
 		Stack_Pop(stack);
 		*value |= c << i * 8;
 	}
 }
 
-/// @brief Finds variable value
-/// @param values array containing variables and its values
-/// @param cnt values array length
-/// @param var variable to find its value
-/// @return value of the given variable
-int var_value(VariableValue* values, int cnt, char var) {
+
+bool var_value(VariableValue* values, int cnt, char var, int *val) {
 	for (int i = 0; i < cnt; ++i) {
 		if (values[i].name == var) {
-			return values[i].value;
+			*val = values[i].value;
+			return true;
 		}
 	}
-	return 0;
+	return false;
 }
 
 /// @brief Calculates next operation
@@ -259,22 +261,20 @@ int var_value(VariableValue* values, int cnt, char var) {
 /// @param op operation to calculate with
 /// @return result of the operation
 int calc(Stack *stack, char op) {
+	// Gets two numbers from stack
 	int x, y;
 	expr_value_pop(stack, &y);
 	expr_value_pop(stack, &x);
 
+	// Calculates based on operator
 	switch (op) {
 		case '+':
-			//printf("%d + %d = %d\n", x, y, x + y);
 			return x + y;
 		case '-':
-			//printf("%d - %d = %d\n", x, y, x - y);
 			return x - y;
 		case '*':
-			//printf("%d * %d = %d\n", x, y, x * y);
 			return x * y;
 		case '/':
-			//printf("%d / %d = %d\n", x, y, x / y);
 			return x / y;
 		default:
 			return 0;
@@ -304,25 +304,36 @@ int calc(Stack *stack, char op) {
  * @return výsledek vyhodnocení daného výrazu na základě poskytnutých hodnot proměnných
  */
 bool eval( const char *infixExpression, VariableValue variableValues[], int variableValueCount, int *value ) {
-	// Stack initialization
+	// Numbers stack initialization
 	Stack nums;
 	Stack_Init(&nums);
 
+	// Gets postfix and evaluates it
 	char *postfix = infix2postfix(infixExpression);
+	int v;
 	for (int i = 0; postfix && postfix[i] != '='; ++i) {
+		// Pushes calculated value to stack based on current operator
 		if (presedence(postfix[i])) {
 			expr_value_push(&nums, calc(&nums, postfix[i]));
-		} else if (isdigit(postfix[i])) {
+		}
+		// Pushes digit to stack when digit
+		else if (isdigit(postfix[i])) {
 			expr_value_push(&nums, postfix[i] - '0');
-		} else {
-			int v = var_value(variableValues, variableValueCount, postfix[i]);
+		}
+		// Gets variable value and pushes it to stack
+		else {
+			if (!var_value(variableValues, variableValueCount, postfix[i], &v))
+				return false;
 			expr_value_push(&nums, v);
 		}
 	}
 
+	// Gets result stored in stack
 	expr_value_pop(&nums, value);
 
+	// If stack is not empty, returns false
 	bool res = Stack_IsEmpty(&nums);
+	// Frees stack and postfix string
 	Stack_Dispose(&nums);
 	free(postfix);
 
