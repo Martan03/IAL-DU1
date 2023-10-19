@@ -111,6 +111,68 @@ void DLL_Dispose( DLList *list ) {
 	list->lastElement = NULL;
 }
 
+/// @brief Inserts item to the list
+/// @param list list to insert items to
+/// @param prev previous element for the new element
+/// @param next next element for the new element
+/// @param data new element data
+void insert(DLList *list, DLLElementPtr prev, DLLElementPtr next, int data) {
+	// Allocates memory for new item and checks if allocated properly
+	DLLElementPtr new = malloc(sizeof(*new));
+	if (!new) {
+		DLL_Error();
+		return;
+	}
+
+	// Inits new item
+	new->data = data;
+	new->previousElement = prev;
+	new->nextElement = next;
+
+	// Sets connection with previous element if set
+	if (new->previousElement)
+		new->previousElement->nextElement = new;
+	// When not set, new is first
+	else
+		list->firstElement = new;
+
+	// Sets connection with next element if set
+	if (new->nextElement)
+		new->nextElement->previousElement = new;
+	// When not set, new is last
+	else
+		list->lastElement = new;
+}
+
+/// @brief Deletes item from the list
+/// @param list list from which element will be removed
+/// @param rem element that will be removed
+void delete(DLList *list, DLLElementPtr rem) {
+	// Checks if rem is NULL
+	if (!rem)
+		return;
+
+	// If active element was first, cancels active element
+	if (list->activeElement && list->activeElement == rem)
+		list->activeElement = NULL;
+
+	// Sets connection with previous element if set
+	if (rem->previousElement)
+		rem->previousElement->nextElement = rem->nextElement;
+	// When not set, set new first element
+	else
+		list->firstElement = rem->nextElement;
+
+	// Sets connection with next element if set
+	if (rem->nextElement)
+		rem->nextElement->previousElement = rem->previousElement;
+	// When not set, set new last element
+	else
+		list->lastElement = rem->previousElement;
+
+	free(rem);
+}
+
 /**
  * Vloží nový prvek na začátek seznamu list.
  * V případě, že není dostatek paměti pro nový prvek při operaci malloc,
@@ -120,25 +182,7 @@ void DLL_Dispose( DLList *list ) {
  * @param data Hodnota k vložení na začátek seznamu
  */
 void DLL_InsertFirst( DLList *list, int data ) {
-	// Allocates memory for new item and check if allocated properly
-	DLLElementPtr new = malloc(sizeof(*new));
-	if (!new) {
-		DLL_Error();
-		return;
-	}
-
-	// Inits new item
-	new->data = data;
-	new->previousElement = NULL;
-	new->nextElement = list->firstElement;
-
-	list->firstElement = new;
-	// Sets previous element for previously first
-	if (new->nextElement)
-		new->nextElement->previousElement = new;
-	// If list was empty before, sets lastElement as well
-	else
-		list->lastElement = new;
+	insert(list, NULL, list->firstElement, data);
 }
 
 /**
@@ -150,25 +194,7 @@ void DLL_InsertFirst( DLList *list, int data ) {
  * @param data Hodnota k vložení na konec seznamu
  */
 void DLL_InsertLast( DLList *list, int data ) {
-	// Allocates memory for new item and check if allocated properly
-	DLLElementPtr new = malloc(sizeof(*new));
-	if (!new) {
-		DLL_Error();
-		return;
-	}
-
-	// Inits new item
-	new->data = data;
-	new->nextElement = NULL;
-	new->previousElement = list->lastElement;
-
-	list->lastElement = new;
-	// Sets next element for previously last
-	if (new->previousElement)
-		new->previousElement->nextElement = new;
-	// If list was empty before, sets firstElement as well
-	else
-		list->firstElement = new;
+	insert(list, list->lastElement, NULL, data);
 }
 
 /**
@@ -235,25 +261,7 @@ void DLL_GetLast( DLList *list, int *dataPtr ) {
  * @param list Ukazatel na inicializovanou strukturu dvousměrně vázaného seznamu
  */
 void DLL_DeleteFirst( DLList *list ) {
-	// Checks if list is empty
-	if (!list->firstElement)
-		return;
-
-	// If active element was first, cancels active element
-	if (list->activeElement == list->firstElement)
-		list->activeElement = NULL;
-
-	// Sets new first element
-	DLLElementPtr del = list->firstElement;
-	list->firstElement = del->nextElement;
-
-	// Checks if lastElement should be set
-	if (list->firstElement)
-		list->firstElement->previousElement = NULL;
-	else
-		list->lastElement = NULL;
-
-	free(del);
+	delete(list, list->firstElement);
 }
 
 /**
@@ -264,25 +272,7 @@ void DLL_DeleteFirst( DLList *list ) {
  * @param list Ukazatel na inicializovanou strukturu dvousměrně vázaného seznamu
  */
 void DLL_DeleteLast( DLList *list ) {
-	// Checks if list is empty
-	if (!list->firstElement)
-		return;
-
-	// If active element was last, cancels active element
-	if (list->activeElement == list->lastElement)
-		list->activeElement = NULL;
-
-	// Sets new last element
-	DLLElementPtr del = list->lastElement;
-	list->lastElement = del->previousElement;
-
-	// Checks if firstElement should be set
-	if (list->lastElement)
-		list->lastElement->nextElement = NULL;
-	else
-		list->firstElement = NULL;
-
-	free(del);
+	delete(list, list->lastElement);
 }
 
 /**
@@ -293,21 +283,11 @@ void DLL_DeleteLast( DLList *list ) {
  * @param list Ukazatel na inicializovanou strukturu dvousměrně vázaného seznamu
  */
 void DLL_DeleteAfter( DLList *list ) {
-	// Checks if active element is set and if it's not last element
-	if (!list->activeElement || list->lastElement == list->activeElement)
+	// Checks if active element is set
+	if (!list->activeElement)
 		return;
 
-	// Sets new element after active
-	DLLElementPtr rem = list->activeElement->nextElement;
-	list->activeElement->nextElement = rem->nextElement;
-
-	// Checks if last element should be set
-	if (list->activeElement->nextElement)
-		rem->nextElement->previousElement = list->activeElement;
-	else
-		list->lastElement = list->activeElement;
-
-	free(rem);
+	delete(list, list->activeElement->nextElement);
 }
 
 /**
@@ -318,21 +298,11 @@ void DLL_DeleteAfter( DLList *list ) {
  * @param list Ukazatel na inicializovanou strukturu dvousměrně vázaného seznamu
  */
 void DLL_DeleteBefore( DLList *list ) {
-	// Checks if active element is set and if it's not first element
-	if (!list->activeElement || list->firstElement == list->activeElement)
+	// Checks if active element is set
+	if (!list->activeElement)
 		return;
 
-	// Sets new element before active
-	DLLElementPtr rem = list->activeElement->previousElement;
-	list->activeElement->previousElement = rem->previousElement;
-
-	// Checks if first element should be set
-	if (rem->previousElement)
-		rem->previousElement->nextElement = list->activeElement;
-	else
-		list->firstElement = list->activeElement;
-
-	free(rem);
+	delete(list, list->activeElement->previousElement);
 }
 
 /**
@@ -349,26 +319,7 @@ void DLL_InsertAfter( DLList *list, int data ) {
 	if (!list->activeElement)
 		return;
 
-	// Allocates memory for new item and checks if allocated properly
-	DLLElementPtr new = malloc(sizeof(*new));
-	if (!new) {
-		DLL_Error();
-		return;
-	}
-
-	// Inits new item
-	new->data = data;
-	new->previousElement = list->activeElement;
-	new->nextElement = list->activeElement->nextElement;
-
-	// Inserts new item after active element
-	list->activeElement->nextElement = new;
-
-	// Checks if last element should be set
-	if (new->nextElement)
-		new->nextElement->previousElement = new;
-	else
-		list->lastElement = new;
+	insert(list, list->activeElement, list->activeElement->nextElement, data);
 }
 
 /**
@@ -385,26 +336,8 @@ void DLL_InsertBefore( DLList *list, int data ) {
 	if (!list->activeElement)
 		return;
 
-	// Allocates memory for new item and checks if allocated properly
-	DLLElementPtr new = malloc(sizeof(*new));
-	if (!new) {
-		DLL_Error();
-		return;
-	}
-
-	// Inits new item
-	new->data = data;
-	new->nextElement = list->activeElement;
-	new->previousElement = list->activeElement->previousElement;
-
-	// Inserts new item before active element
-	list->activeElement->previousElement = new;
-
-	// Checks if last element should be set
-	if (new->previousElement)
-		new->previousElement->nextElement = new;
-	else
-		list->firstElement = new;
+	insert(
+		list, list->activeElement->previousElement, list->activeElement, data);
 }
 
 /**
