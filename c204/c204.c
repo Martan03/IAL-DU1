@@ -177,7 +177,7 @@ char *infix2postfix( const char *infixExpression ) {
 
 	// Main loop containing infix to postfix parsing, calls specific functions
 	unsigned cur = 0;
-	for (int i = 0; infixExpression[i] != '='; ++i) {
+	for (int i = 0; infixExpression[i]; ++i) {
 		if (presedence(infixExpression[i]))
 			doOperation(&ops, infixExpression[i], postfix, &cur);
 		else if (infixExpression[i] == '(')
@@ -188,10 +188,14 @@ char *infix2postfix( const char *infixExpression ) {
 			postfix[cur++] = infixExpression[i];
 	}
 
+	// Gets whether given infix was valid ('=')
+	bool valid = postfix[--cur] == '=';
+
 	// Pops remaining operators
 	untilLeftPar(&ops, postfix, &cur);
-	// Adds equals and end of string characters
-	postfix[cur++] = '=';
+	// Adds equals if valid and end of string character
+	if (valid)
+		postfix[cur++] = '=';
 	postfix[cur] = '\0';
 
 	// Frees stack
@@ -244,7 +248,12 @@ void expr_value_pop( Stack *stack, int *value ) {
 	}
 }
 
-
+/// @brief Gets value of the variable
+/// @param values array with variable values
+/// @param cnt number of values in the array
+/// @param var variable to get the value of
+/// @param val variable value output
+/// @return true on success, else false
 bool var_value(VariableValue* values, int cnt, char var, int *val) {
 	for (int i = 0; i < cnt; ++i) {
 		if (values[i].name == var) {
@@ -318,7 +327,14 @@ bool eval( const char *infixExpression, VariableValue variableValues[], int vari
 	// Gets postfix and evaluates it
 	char *postfix = infix2postfix(infixExpression);
 	int v;
-	for (int i = 0; postfix && postfix[i] != '='; ++i) {
+	bool valid = false;
+	for (int i = 0; postfix && postfix[i]; ++i) {
+		// If char is equals, postfix is valid and ended
+		if (postfix[i] == '=') {
+			valid = true;
+			break;
+		}
+
 		// Pushes calculated value to stack based on current operator
 		if (presedence(postfix[i])) {
 			// Returns false when zero division or unknown operation
@@ -342,7 +358,7 @@ bool eval( const char *infixExpression, VariableValue variableValues[], int vari
 	expr_value_pop(&nums, value);
 
 	// If stack is not empty, returns false
-	bool res = Stack_IsEmpty(&nums);
+	bool res = Stack_IsEmpty(&nums) || valid;
 	// Frees stack and postfix string
 	Stack_Dispose(&nums);
 	free(postfix);
