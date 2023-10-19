@@ -258,8 +258,9 @@ bool var_value(VariableValue* values, int cnt, char var, int *val) {
 /// @brief Calculates next operation
 /// @param stack stack containing numbers
 /// @param op operation to calculate with
-/// @return result of the operation
-int calc(Stack *stack, char op) {
+/// @param res pointer to int that result will be saved to
+/// @return true on success, else false
+bool calc(Stack *stack, char op, int *res) {
 	// Gets two numbers from stack
 	int x, y;
 	expr_value_pop(stack, &y);
@@ -268,15 +269,22 @@ int calc(Stack *stack, char op) {
 	// Calculates based on operator
 	switch (op) {
 		case '+':
-			return x + y;
+			*res = x + y;
+			return true;
 		case '-':
-			return x - y;
+			*res = x - y;
+			return true;
 		case '*':
-			return x * y;
+			*res = x * y;
+			return true;
 		case '/':
-			return x / y;
+			// Checks zero division
+			if (y == 0)
+				return false;
+			*res = x / y;
+			return true;
 		default:
-			return 0;
+			return false;
 	}
 }
 
@@ -313,7 +321,10 @@ bool eval( const char *infixExpression, VariableValue variableValues[], int vari
 	for (int i = 0; postfix && postfix[i] != '='; ++i) {
 		// Pushes calculated value to stack based on current operator
 		if (presedence(postfix[i])) {
-			expr_value_push(&nums, calc(&nums, postfix[i]));
+			// Returns false when zero division or unknown operation
+			if (!calc(&nums, postfix[i], &v))
+				return false;
+			expr_value_push(&nums, v);
 		}
 		// Pushes digit to stack when digit
 		else if (postfix[i] >= '0' && postfix[i] <= '9') {
