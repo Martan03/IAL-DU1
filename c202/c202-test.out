@@ -5,6 +5,10 @@ C202 - Stack Implemented Using an Array, Basic Tests
 STACK: BOTTOM [ ] TOP
 
 
+[test_init_null] Initialization with NULL
+Stack error: INIT
+
+
 [test_push_empty] Stack push after initialization
 STACK: BOTTOM [ ] TOP
 STACK: BOTTOM [ a ] TOP
@@ -25,16 +29,29 @@ STACK: BOTTOM [ a b c d e ] TOP
 STACK: BOTTOM [ a b ] TOP
 
 
+[test_pop_empty] Stack pop empty stack
+STACK: BOTTOM [ ] TOP
+
+
 [test_top] Stack top
 STACK: BOTTOM [ a ] TOP
 Char on the top: a
 STACK: BOTTOM [ a ] TOP
 
 
+[test_top_multiple_push] Stack top after multiple pushes
+Char on the top: c
+Char on the top: a
+
+
 [test_top_full] Stack top of full stack
 STACK: BOTTOM [ 0 1 2 3 4 5 6 7 ] TOP
 Char on the top: 7
 STACK: BOTTOM [ 0 1 2 3 4 5 6 7 ] TOP
+
+
+[test_top_empty] Stack top of empty stack
+Stack error: TOP
 
 
 [test_empty] Stack is empty after initialization
@@ -52,6 +69,12 @@ STACK: BOTTOM [ 0 1 2 3 4 5 6 7 ] TOP
 Is stack empty? No
 
 
+[test_empty_after_pop] Stack is empty after pop
+STACK: BOTTOM [ a ] TOP
+STACK: BOTTOM [ ] TOP
+Is stack empty? Yes
+
+
 [test_not_full_init] Stack is not full after initialization
 STACK: BOTTOM [ ] TOP
 Is stack full? No
@@ -65,6 +88,10 @@ Is stack full? No
 [test_full] Stack is full after filling
 STACK: BOTTOM [ 0 1 2 3 4 5 6 7 ] TOP
 Is stack full? Yes
+
+
+[test_push_filled] Stack is full when pushing
+Stack error: PUSH
 
 
 [test_dispose] Dispose stack
