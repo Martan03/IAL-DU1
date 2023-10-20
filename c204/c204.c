@@ -219,8 +219,8 @@ char *infix2postfix( const char *infixExpression ) {
 void expr_value_push( Stack *stack, int value ) {
 	// Pushes sizeof(value) bytes of number (more generic than using 4 bytes)
 	// Value has to be shifted and then masked
-	for (int i = sizeof(value) - 1; i >= 0 ; --i) {
-		Stack_Push(stack, value >> i * 8 & 0xff);
+	for (int i = 0; i < (int)sizeof(value); ++i) {
+		Stack_Push(stack, value >> (i * 8) & 0xff);
 	}
 }
 
@@ -241,10 +241,10 @@ void expr_value_pop( Stack *stack, int *value ) {
 	char c;
 	// Gets sizeof(*value) bytes of number (more generic then using 4 bytes)
 	// Pops from stack, shifts popped value and does bit or to get final value
-	for (int i = 0; i < (int)sizeof(*value); ++i) {
+	for (int i = (int)sizeof(*value) - 1; i >= 0; --i) {
 		Stack_Top(stack, &c);
 		Stack_Pop(stack);
-		*value |= c << i * 8;
+		*value |= (c << (i * 8)) & (0xff << (i * 8));
 	}
 }
 
@@ -338,8 +338,11 @@ bool eval( const char *infixExpression, VariableValue variableValues[], int vari
 		// Pushes calculated value to stack based on current operator
 		if (presedence(postfix[i])) {
 			// Returns false when zero division or unknown operation
-			if (!calc(&nums, postfix[i], &v))
+			if (!calc(&nums, postfix[i], &v)) {
+				Stack_Dispose(&nums);
+				free(postfix);
 				return false;
+			}
 			expr_value_push(&nums, v);
 		}
 		// Pushes digit to stack when digit

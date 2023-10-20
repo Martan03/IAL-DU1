@@ -98,6 +98,48 @@ TEST(test_13, "A lot of brackets")
 	}
 ENDTEST
 
+TEST(test_14, "Invalid infix")
+	if (convert("A+B ", &expr))
+	{
+		verify(expr, "AB+");
+	}
+ENDTEST
+
+TEST(test_15, "Expression 1")
+	if (convert("(A+B)*(C-D)=", &expr))
+	{
+		verify(expr, "AB+CD-*=");
+	}
+ENDTEST
+
+TEST(test_16, "Expression 2")
+	if (convert("A*B+C/D-E=", &expr))
+	{
+		verify(expr, "AB*CD/+E-=");
+	}
+ENDTEST
+
+TEST(test_17, "Expression 3")
+	if (convert("A+B*C-D/E=", &expr))
+	{
+		verify(expr, "ABC*+DE/-=");
+	}
+ENDTEST
+
+TEST(test_18, "Expression 4")
+	if (convert("A+2*B-4/C=", &expr))
+	{
+		verify(expr, "A2B*+4C/-=");
+	}
+ENDTEST
+
+TEST(test_19, "Expression 5")
+	if (convert("((a+b))=", &expr))
+	{
+		verify(expr, "ab+=");
+	}
+ENDTEST
+
 TEST(test_eval_01, "Evaluate expression")
 	STACK_SIZE = 128;
 	expr = "(a+b)*(c-d)=";
@@ -145,6 +187,102 @@ TEST(test_eval_03, "Evaluate expression")
 	printf("eval result: %d\n", result);
 ENDTEST
 
+TEST(test_eval_04, "Evaluate expression")
+	STACK_SIZE = 128;
+	expr = "a*b+c/d=";
+	VariableValue values[] = {
+			{'a', 10},
+			{'b', 3},
+			{'c', 100},
+			{'d', 0},
+	};
+	PRINT_EXPR_EVAL_CONFIG();
+	if (eval(expr, values, valuesCount, &result) == false) {
+		FAIL("eval() call returned false\n");
+	}
+	printf("eval result: %d\n", result);
+ENDTEST
+
+TEST(test_eval_05, "Evaluate expression")
+	STACK_SIZE = 128;
+	expr = "A*B+C/D-5=";
+	VariableValue values[] = {
+			{'A', 10},
+			{'B', 3},
+			{'C', 100},
+			{'D', 0},
+	};
+	PRINT_EXPR_EVAL_CONFIG();
+	if (eval(expr, values, valuesCount, &result) == false) {
+		FAIL("eval() call returned false\n");
+	}
+	printf("eval result: %d\n", result);
+ENDTEST
+
+TEST(test_eval_06, "Evaluate expression")
+	STACK_SIZE = 128;
+	expr = "A*(2+C/(D-5))=";
+	VariableValue values[] = {
+			{'A', 10},
+			{'B', 3},
+			{'C', 100},
+			{'D', 15},
+	};
+	PRINT_EXPR_EVAL_CONFIG();
+	if (eval(expr, values, valuesCount, &result) == false) {
+		FAIL("eval() call returned false\n");
+	}
+	printf("eval result: %d\n", result);
+ENDTEST
+
+TEST(test_eval_07, "Evaluate expression")
+	STACK_SIZE = 128;
+	expr = "(E*((A+B)*C+D)+F)*G+H=";
+	VariableValue values[] = {
+			{'A', 10},
+			{'B', 3},
+			{'C', 100},
+			{'D', 15},
+			{'E', 2},
+			{'F', 5},
+			{'G', 3},
+			{'H', 99},
+	};
+	PRINT_EXPR_EVAL_CONFIG();
+	if (eval(expr, values, valuesCount, &result) == false) {
+		FAIL("eval() call returned false\n");
+	}
+	printf("eval result: %d\n", result);
+ENDTEST
+
+TEST(test_eval_08, "Evaluate expression")
+	STACK_SIZE = 128;
+	expr = "A+B=";
+	VariableValue values[] = {
+			{'A', 536870911},
+			{'B', 5},
+	};
+	PRINT_EXPR_EVAL_CONFIG();
+	if (eval(expr, values, valuesCount, &result) == false) {
+		FAIL("eval() call returned false\n");
+	}
+	printf("eval result: %d\n", result);
+ENDTEST
+
+TEST(test_eval_09, "Evaluate expression")
+	STACK_SIZE = 128;
+	expr = "A+B=";
+	VariableValue values[] = {
+			{'A', -536870911},
+			{'B', 5},
+	};
+	PRINT_EXPR_EVAL_CONFIG();
+	if (eval(expr, values, valuesCount, &result) == false) {
+		FAIL("eval() call returned false\n");
+	}
+	printf("eval result: %d\n", result);
+ENDTEST
+
 
 void (*tests[])(void) = {
 		test_01,
@@ -160,9 +298,21 @@ void (*tests[])(void) = {
 		test_11,
 		test_12,
 		test_13,
+		test_14,
+		test_15,
+		test_16,
+		test_17,
+		test_18,
+		test_19,
 		test_eval_01,
 		test_eval_02,
 		test_eval_03,
+		test_eval_04,
+		test_eval_05,
+		test_eval_06,
+		test_eval_07,
+		test_eval_08,
+		test_eval_09,
 };
 
 int main( int argc, char *argv[] ) {
