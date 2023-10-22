@@ -1,0 +1,191 @@
+C204 - Infix to Postfix Expression Conversion, Basic Tests
+==========================================================
+
+[test_01] Upper and lower case characters with plus operator
+Provided infix  : a+B=
+Expected postfix: aB+=
+Conversion match: OK
+
+
+
+[test_02] Digits with minus operator
+Provided infix  : 0-1=
+Expected postfix: 01-=
+Conversion match: OK
+
+
+
+[test_03] Mixed operands with multiplication operator
+Provided infix  : a*0=
+Expected postfix: a0*=
+Conversion match: OK
+
+
+
+[test_04] Mixed operands with division operator
+Provided infix  : B/1=
+Expected postfix: B1/=
+Conversion match: OK
+
+
+
+[test_05] Simple parentheses support
+Provided infix  : (a+b)=
+Expected postfix: ab+=
+Conversion match: OK
+
+
+
+[test_06] Expression evaluation from the left to the right
+Provided infix  : a+b+c=
+Expected postfix: ab+c+=
+Conversion match: OK
+
+
+
+[test_07] Minus operator does not have higher priority than plus
+Provided infix  : a+b-c=
+Expected postfix: ab+c-=
+Conversion match: OK
+
+
+
+[test_08] Plus operator does not have higher priority than minus
+Provided infix  : A-B+C=
+Expected postfix: AB-C+=
+Conversion match: OK
+
+
+
+[test_09] Plus operator does not have higher priority than minus
+Provided infix  : 1*2/3=
+Expected postfix: 12*3/=
+Conversion match: OK
+
+
+
+[test_10] Parentheses change operator priority
+Provided infix  : A+(B-c)=
+Expected postfix: ABc-+=
+Conversion match: OK
+
+
+
+[test_11] Long expression
+Provided infix  : A*B*C*D*E+F=
+Expected postfix: AB*C*D*E*F+=
+Conversion match: OK
+
+
+
+[test_12] Loop checker
+Provided infix  : A+B*C*D-E=
+Expected postfix: ABC*D*+E-=
+Conversion match: OK
+
+
+
+[test_13] A lot of brackets
+Provided infix  : (E*((A+B)*C+D)+F)*G+H=
+Expected postfix: EAB+C*D+*F+G*H+=
+Conversion match: OK
+
+
+
+[test_14] Invalid infix
+Provided infix  : A+B 
+Expected postfix: AB+
+Conversion match: OK
+
+
+
+[test_15] Expression 1
+Provided infix  : (A+B)*(C-D)=
+Expected postfix: AB+CD-*=
+Conversion match: OK
+
+
+
+[test_16] Expression 2
+Provided infix  : A*B+C/D-E=
+Expected postfix: AB*CD/+E-=
+Conversion match: OK
+
+
+
+[test_17] Expression 3
+Provided infix  : A+B*C-D/E=
+Expected postfix: ABC*+DE/-=
+Conversion match: OK
+
+
+
+[test_18] Expression 4
+Provided infix  : A+2*B-4/C=
+Expected postfix: A2B*+4C/-=
+Conversion match: OK
+
+
+
+[test_19] Expression 5
+Provided infix  : ((a+b))=
+Expected postfix: ab+=
+Conversion match: OK
+
+
+
+[test_eval_01] Evaluate expression
+expression : (a+b)*(c-d)=
+variables  : a = 5, b = 5, c = 12, d = 2
+eval result: 100
+
+
+[test_eval_02] Evaluate expression
+expression : (a-b)*C=
+variables  : a = 3, b = 5, C = -5
+eval result: 10
+
+
+[test_eval_03] Evaluate expression
+expression : a*b+c/d=
+variables  : a = 10, b = 3, c = 100, d = 5
+eval result: 50
+
+
+[test_eval_04] Evaluate expression
+expression : a*b+c/d=
+variables  : a = 10, b = 3, c = 100, d = 0
+[FAILED] eval() call returned false
+eval result: 50
+
+
+[test_eval_05] Evaluate expression
+expression : A*B+C/D-5=
+variables  : A = 10, B = 3, C = 100, D = 0
+[FAILED] eval() call returned false
+eval result: 50
+
+
+[test_eval_06] Evaluate expression
+expression : A*(2+C/(D-5))=
+variables  : A = 10, B = 3, C = 100, D = 15
+eval result: 120
+
+
+[test_eval_07] Evaluate expression
+expression : (E*((A+B)*C+D)+F)*G+H=
+variables  : A = 10, B = 3, C = 100, D = 15, E = 2, F = 5, G = 3, H = 99
+eval result: 8004
+
+
+[test_eval_08] Evaluate expression
+expression : A+B=
+variables  : A = 536870911, B = 5
+eval result: 536870916
+
+
+[test_eval_09] Evaluate expression
+expression : A+B=
+variables  : A = -536870911, B = 5
+eval result: -536870906
+

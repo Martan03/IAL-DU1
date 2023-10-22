@@ -341,6 +341,7 @@ bool eval( const char *infixExpression, VariableValue variableValues[], int vari
 			if (!calc(&nums, postfix[i], &v)) {
 				Stack_Dispose(&nums);
 				free(postfix);
+				*value = 0;
 				return false;
 			}
 			expr_value_push(&nums, v);
